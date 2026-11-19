@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!-- saved from url=(0093)http://localhost:63342/Django%20practice/myproject/t2/i2.html?_ijt=m594j1j4clck0b1tvpvk9tu9uh -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <title>FocusFlow - Smart Study Planner</title>
+
+    <link rel="stylesheet" href="./FocusFlow - Smart Study Planner_files/style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>FocusFlow</h1>
+        <p>Smart Study Planner</p>
+    </header>
+
+    <!-- Dashboard -->
+    <div class="dashboard">
+
+        <div class="card">
+            <h3>Total Tasks</h3>
+            <h2 id="totalTasks">0</h2>
+        </div>
+
+        <div class="card">
+            <h3>Completed</h3>
+            <h2 id="completedTasks">0</h2>
+        </div>
+
+        <div class="card">
+            <h3>Study Progress</h3>
+            <h2 id="progress">0%</h2>
+        </div>
+
+    </div>
+
+    <!-- Add Task -->
+    <div class="section">
+
+        <h2>Add Study Task</h2>
+
+        <input type="text" id="taskName" placeholder="Enter subject or topic">
+
+        <input type="number" id="studyTime" placeholder="Study time (minutes)" min="1">
+
+        <button onclick="addTask()">Add Task</button>
+
+    </div>
+
+    <!-- Task List -->
+    <div class="section">
+
+        <h2>My Daily Tasks</h2>
+
+        <ul id="taskList"></ul>
+
+    </div>
+
+    <!-- Pomodoro Timer -->
+    <div class="section timer">
+
+        <h2>Pomodoro Timer</h2>
+
+        <h1 id="timer">25:00</h1>
+
+        <button onclick="startTimer()">Start</button>
+
+        <button onclick="pauseTimer()">Pause</button>
+
+        <button onclick="resetTimer()">Reset</button>
+
+        <p>Focus for 25 minutes and take a short break!</p>
+
+    </div>
+
+</div>
+
+<script src="./FocusFlow - Smart Study Planner_files/{{ url_for('static', filename='script.js') }}"></script>
+
+
+</body></html>
