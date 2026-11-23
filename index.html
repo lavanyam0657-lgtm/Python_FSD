@@ -1,0 +1,791 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Library Portal</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg,#100b25,#171b45,#251044);
+    color: white;
+    min-height: 100vh;
+}
+
+.hidden { display: none !important; }
+
+button {
+    background: #8055ed;
+    color: white;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 5px 2px;
+}
+
+button:hover { background: #6335d5; }
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 9px 0;
+    border: 1px solid #65518b;
+    border-radius: 8px;
+    background: #211b3d;
+    color: white;
+}
+
+input::placeholder { color: #aaa; }
+
+.auth {
+    width: 360px;
+    max-width: 92%;
+    margin: 90px auto;
+    padding: 30px;
+    text-align: center;
+    background: rgba(255,255,255,.08);
+    border: 1px solid #65518b;
+    border-radius: 18px;
+}
+
+.auth h1 { color: #c6a8ff; margin-bottom: 12px; }
+.auth p { margin: 15px 0; color: #ccc; }
+.auth a { color: #c6a8ff; cursor: pointer; }
+
+.message {
+    margin-top: 12px;
+    font-size: 14px;
+    min-height: 20px;
+}
+
+header {
+    padding: 20px 5%;
+    background: #100b25;
+    border-bottom: 1px solid #514477;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+header h2 { color: #c6a8ff; }
+
+.container { padding: 30px 5%; }
+
+.welcome { margin-bottom: 25px; }
+
+.welcome h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.stat-card, .panel {
+    background: rgba(255,255,255,.08);
+    border: 1px solid #514477;
+    padding: 22px;
+    border-radius: 14px;
+    margin-bottom: 22px;
+}
+
+.stat-card h3 { color: #c6a8ff; font-size: 15px; }
+.stat-card h1 { margin-top: 12px; }
+
+.panel h2 { color: #c6a8ff; margin-bottom: 15px; }
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+    gap: 10px;
+}
+
+.search { max-width: 450px; }
+
+.table-container { overflow-x: auto; }
+
+table {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
+}
+
+th,td {
+    padding: 13px;
+    text-align: left;
+    border-bottom: 1px solid #514477;
+}
+
+th { color: #c6a8ff; background: #211b3d; }
+
+.available { color: #65f5a0; }
+.issued { color: #ffbb6b; }
+.delete { background: #dc465f; }
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #aaa;
+}
+
+@media(max-width:600px) {
+    header { flex-direction: column; }
+    .container { padding: 20px 4%; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN PAGE -->
+
+<div id="loginPage" class="auth">
+    <h1>📚 Smart Library</h1>
+    <p>Welcome to your digital library</p>
+
+    <form id="loginForm">
+        <input type="email" id="loginEmail"
+        placeholder="Email address" required>
+
+        <input type="password" id="loginPassword"
+        placeholder="Password" required>
+
+        <button type="submit" style="width:100%">
+            Login
+        </button>
+    </form>
+
+    <div id="loginMessage" class="message"></div>
+
+    <p>Don't have an account?
+        <a onclick="showRegister()">Register</a>
+    </p>
+</div>
+
+
+<!-- REGISTER PAGE -->
+
+<div id="registerPage" class="auth hidden">
+    <h1>Create Account</h1>
+    <p>Join Smart Library Portal</p>
+
+    <form id="registerForm">
+
+        <input type="text" id="regName"
+        placeholder="Full Name" required>
+
+        <input type="email" id="regEmail"
+        placeholder="Email Address" required>
+
+        <input type="password" id="regPassword"
+        placeholder="Create Password (minimum 6 characters)"
+        minlength="6" required>
+
+        <input type="password" id="confirmPassword"
+        placeholder="Confirm Password" required>
+
+        <button type="submit" style="width:100%">
+            Register
+        </button>
+    </form>
+
+    <div id="registerMessage" class="message"></div>
+
+    <p>Already registered?
+        <a onclick="showLogin()">Login</a>
+    </p>
+</div>
+
+
+<!-- DASHBOARD -->
+
+<div id="dashboard" class="hidden">
+
+<header>
+    <h2>📚 Smart Library Portal</h2>
+    <div>
+        <span id="userName"></span>
+        <button onclick="logout()">Logout</button>
+    </div>
+</header>
+
+<div class="container">
+
+    <div class="welcome">
+        <h1>Library Dashboard</h1>
+        <p>Manage books and library activities.</p>
+    </div>
+
+    <!-- STATISTICS -->
+
+    <div class="stats">
+
+        <div class="stat-card">
+            <h3>Total Books</h3>
+            <h1 id="totalBooks">0</h1>
+        </div>
+
+        <div class="stat-card">
+            <h3>Available Books</h3>
+            <h1 id="availableBooks">0</h1>
+        </div>
+
+        <div class="stat-card">
+            <h3>Issued Books</h3>
+            <h1 id="issuedBooks">0</h1>
+        </div>
+
+        <div class="stat-card">
+            <h3>Registered Users</h3>
+            <h1 id="totalUsers">0</h1>
+        </div>
+
+    </div>
+
+    <!-- ADD BOOK -->
+
+    <div class="panel">
+        <h2>➕ Add New Book</h2>
+
+        <div class="form-grid">
+            <input id="bookTitle" placeholder="Book Title">
+            <input id="bookAuthor" placeholder="Author Name">
+            <input id="bookCategory" placeholder="Category">
+        </div>
+
+        <button onclick="addBook()">Add Book</button>
+    </div>
+
+    <!-- BOOK LIST -->
+
+    <div class="panel">
+        <h2>📖 Book Collection</h2>
+
+        <input class="search" id="searchBook"
+        placeholder="Search books..."
+        oninput="displayBooks()">
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="bookTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- HISTORY -->
+
+    <div class="panel">
+        <h2>📋 Issued Books History</h2>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Book</th>
+                        <th>Issued To</th>
+                        <th>Issue Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    Smart Library Management System | CSE Mini Project
+</footer>
+
+</div>
+
+
+<script>
+
+// SAFE LOCAL STORAGE
+
+function readStorage(key, fallback) {
+    try {
+        const data = JSON.parse(localStorage.getItem(key));
+        return data === null ? fallback : data;
+    } catch {
+        return fallback;
+    }
+}
+
+let users = readStorage("libraryUsers", []);
+
+let books = readStorage("libraryBooks", [
+    {
+        id: 1,
+        title: "Python Programming",
+        author: "John Smith",
+        category: "Programming",
+        status: "Available",
+        issuedTo: "",
+        issueDate: ""
+    },
+    {
+        id: 2,
+        title: "Data Structures",
+        author: "Mark Allen",
+        category: "Computer Science",
+        status: "Available",
+        issuedTo: "",
+        issueDate: ""
+    },
+    {
+        id: 3,
+        title: "Database Management",
+        author: "Korth",
+        category: "DBMS",
+        status: "Available",
+        issuedTo: "",
+        issueDate: ""
+    },
+    {
+        id: 4,
+        title: "Java Programming",
+        author: "Herbert Schildt",
+        category: "Programming",
+        status: "Available",
+        issuedTo: "",
+        issueDate: ""
+    },
+    {
+        id: 5,
+        title: "Computer Networks",
+        author: "Andrew Tanenbaum",
+        category: "Networking",
+        status: "Available",
+        issuedTo: "",
+        issueDate: ""
+    }
+]);
+
+// Use a separate session for login
+
+let currentUser = readStorage("librarySession", null);
+
+const $ = id => document.getElementById(id);
+
+function saveData() {
+    localStorage.setItem("libraryUsers", JSON.stringify(users));
+    localStorage.setItem("libraryBooks", JSON.stringify(books));
+}
+
+function showRegister() {
+    $("loginPage").classList.add("hidden");
+    $("registerPage").classList.remove("hidden");
+    $("loginMessage").textContent = "";
+}
+
+function showLogin() {
+    $("registerPage").classList.add("hidden");
+    $("loginPage").classList.remove("hidden");
+    $("registerMessage").textContent = "";
+}
+
+
+// REGISTRATION
+
+$("registerForm").addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const name = $("regName").value.trim();
+    const email = $("regEmail").value.trim().toLowerCase();
+    const password = $("regPassword").value;
+    const confirm = $("confirmPassword").value;
+
+    if (!name || !email || !password || !confirm) {
+        $("registerMessage").textContent =
+            "Please fill all fields.";
+        return;
+    }
+
+    if (password.length < 6) {
+        $("registerMessage").textContent =
+            "Password must have at least 6 characters.";
+        return;
+    }
+
+    if (password !== confirm) {
+        $("registerMessage").textContent =
+            "Passwords do not match!";
+        return;
+    }
+
+    const existing = users.find(u => u.email === email);
+
+    if (existing) {
+        $("registerMessage").textContent =
+            "Email already registered. Please login.";
+        return;
+    }
+
+    users.push({
+        name: name,
+        email: email,
+        password: password
+    });
+
+    saveData();
+
+    $("registerMessage").textContent =
+        "Registration successful! You can now login.";
+
+    $("registerForm").reset();
+
+    setTimeout(showLogin, 1000);
+
+});
+
+
+// LOGIN
+
+$("loginForm").addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const email = $("loginEmail").value.trim().toLowerCase();
+    const password = $("loginPassword").value;
+
+    const user = users.find(u =>
+        u.email.trim().toLowerCase() === email &&
+        u.password === password
+    );
+
+    if (!user) {
+        $("loginMessage").textContent =
+            "Invalid email or password. Please register first.";
+        $("loginMessage").style.color = "#ff7777";
+        return;
+    }
+
+    currentUser = {
+        name: user.name,
+        email: user.email
+    };
+
+    sessionStorage.setItem(
+        "librarySession",
+        JSON.stringify(currentUser)
+    );
+
+    $("loginMessage").textContent = "";
+
+    openDashboard();
+
+});
+
+
+// OPEN DASHBOARD
+
+function openDashboard() {
+
+    if (!currentUser) return;
+
+    $("loginPage").classList.add("hidden");
+    $("registerPage").classList.add("hidden");
+    $("dashboard").classList.remove("hidden");
+
+    $("userName").textContent =
+        "Welcome, " + currentUser.name;
+
+    updateDashboard();
+}
+
+
+// DASHBOARD UPDATE
+
+function updateDashboard() {
+
+    $("totalBooks").textContent = books.length;
+
+    $("availableBooks").textContent =
+        books.filter(b => b.status === "Available").length;
+
+    $("issuedBooks").textContent =
+        books.filter(b => b.status === "Issued").length;
+
+    $("totalUsers").textContent = users.length;
+
+    displayBooks();
+    displayHistory();
+}
+
+
+// ADD BOOK
+
+function addBook() {
+
+    const title = $("bookTitle").value.trim();
+    const author = $("bookAuthor").value.trim();
+    const category = $("bookCategory").value.trim();
+
+    if (!title || !author || !category) {
+        alert("Please enter all book details.");
+        return;
+    }
+
+    const newBook = {
+        id: books.length
+            ? Math.max(...books.map(b => b.id)) + 1
+            : 1,
+        title: title,
+        author: author,
+        category: category,
+        status: "Available",
+        issuedTo: "",
+        issueDate: ""
+    };
+
+    books.push(newBook);
+
+    saveData();
+
+    $("bookTitle").value = "";
+    $("bookAuthor").value = "";
+    $("bookCategory").value = "";
+
+    updateDashboard();
+
+    alert("Book added successfully!");
+
+}
+
+
+// DISPLAY BOOKS
+
+function displayBooks() {
+
+    const search = $("searchBook").value.toLowerCase();
+
+    const table = $("bookTable");
+    table.innerHTML = "";
+
+    const filtered = books.filter(b =>
+        b.title.toLowerCase().includes(search) ||
+        b.author.toLowerCase().includes(search) ||
+        b.category.toLowerCase().includes(search)
+    );
+
+    if (filtered.length === 0) {
+        table.innerHTML =
+            "<tr><td colspan='6'>No books found.</td></tr>";
+        return;
+    }
+
+    filtered.forEach(book => {
+
+        const row = document.createElement("tr");
+
+        const values = [
+            book.id,
+            book.title,
+            book.author,
+            book.category,
+            book.status
+        ];
+
+        values.forEach((value, index) => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+
+            if (index === 4) {
+                cell.className =
+                    book.status === "Available"
+                    ? "available" : "issued";
+            }
+
+            row.appendChild(cell);
+        });
+
+        const action = document.createElement("td");
+
+        const button = document.createElement("button");
+
+        button.textContent =
+            book.status === "Available" ? "Issue" : "Return";
+
+        button.onclick = () => {
+            if (book.status === "Available") {
+                issueBook(book.id);
+            } else {
+                returnBook(book.id);
+            }
+        };
+
+        action.appendChild(button);
+        row.appendChild(action);
+
+        table.appendChild(row);
+
+    });
+
+}
+
+
+// ISSUE BOOK
+
+function issueBook(id) {
+
+    const book = books.find(b => b.id === id);
+
+    if (!book || book.status !== "Available") return;
+
+    book.status = "Issued";
+    book.issuedTo = currentUser.name;
+    book.issueDate = new Date().toLocaleDateString();
+
+    saveData();
+    updateDashboard();
+
+    alert("Book issued successfully!");
+
+}
+
+
+// RETURN BOOK
+
+function returnBook(id) {
+
+    const book = books.find(b => b.id === id);
+
+    if (!book || book.status !== "Issued") return;
+
+    if (book.issuedTo !== currentUser.name) {
+        alert("Only the issuing user can return this book.");
+        return;
+    }
+
+    book.status = "Available";
+    book.issuedTo = "";
+    book.issueDate = "";
+
+    saveData();
+    updateDashboard();
+
+    alert("Book returned successfully!");
+
+}
+
+
+// ISSUED BOOK HISTORY
+
+function displayHistory() {
+
+    const table = $("historyTable");
+    table.innerHTML = "";
+
+    const issued = books.filter(b => b.status === "Issued");
+
+    if (issued.length === 0) {
+        table.innerHTML =
+            "<tr><td colspan='4'>No books currently issued.</td></tr>";
+        return;
+    }
+
+    issued.forEach(book => {
+
+        const row = document.createElement("tr");
+
+        [
+            book.title,
+            book.issuedTo,
+            book.issueDate
+        ].forEach(value => {
+
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+
+        });
+
+        const action = document.createElement("td");
+
+        const button = document.createElement("button");
+        button.textContent = "Return";
+
+        button.onclick = () => returnBook(book.id);
+
+        action.appendChild(button);
+        row.appendChild(action);
+
+        table.appendChild(row);
+
+    });
+
+}
+
+
+// LOGOUT
+
+function logout() {
+
+    sessionStorage.removeItem("librarySession");
+
+    currentUser = null;
+
+    $("dashboard").classList.add("hidden");
+    $("loginPage").classList.remove("hidden");
+
+    $("loginForm").reset();
+
+    $("loginMessage").textContent =
+        "You have logged out successfully.";
+
+    $("loginMessage").style.color = "#65f5a0";
+
+}
+
+
+// INITIALIZE
+
+saveData();
+
+if (currentUser &&
+    users.some(u => u.email === currentUser.email)) {
+
+    openDashboard();
+
+} else {
+
+    sessionStorage.removeItem("librarySession");
+    currentUser = null;
+
+    $("loginPage").classList.remove("hidden");
+
+}
+
+</script>
+
+</body>
+</html>
